@@ -1,0 +1,58 @@
+from collections import defaultdict
+
+class Solution:
+    def minimumScore(self, nums, edges):
+        n = len(nums)
+        graph = defaultdict(list)
+        for u, v in edges:
+            graph[u].append(v)
+            graph[v].append(u)
+
+        xor = [0] * n
+        in_time = [0] * n
+        out_time = [0] * n
+        time = [0]
+
+        def dfs(u, parent):
+            xor[u] = nums[u]
+            in_time[u] = time[0]
+            time[0] += 1
+            for v in graph[u]:
+                if v != parent:
+                    dfs(v, u)
+                    xor[u] ^= xor[v]
+            out_time[u] = time[0]
+            time[0] += 1
+
+        dfs(0, -1)
+        total_xor = xor[0]
+
+        def is_ancestor(u, v):
+            return in_time[u] <= in_time[v] <= out_time[v] <= out_time[u]
+
+        min_score = float('inf')
+        edge_list = []
+        for u, v in edges:
+            if in_time[u] > in_time[v]:  # make u parent of v
+                u, v = v, u
+            edge_list.append((v, u))  # child, parent
+
+        for i in range(len(edge_list)):
+            for j in range(i + 1, len(edge_list)):
+                a, pa = edge_list[i]
+                b, pb = edge_list[j]
+                if is_ancestor(a, b):
+                    xor1 = xor[b]
+                    xor2 = xor[a] ^ xor[b]
+                    xor3 = total_xor ^ xor[a]
+                elif is_ancestor(b, a):
+                    xor1 = xor[a]
+                    xor2 = xor[b] ^ xor[a]
+                    xor3 = total_xor ^ xor[b]
+                else:
+                    xor1 = xor[a]
+                    xor2 = xor[b]
+                    xor3 = total_xor ^ xor[a] ^ xor[b]
+                min_score = min(min_score, max(xor1, xor2, xor3) - min(xor1, xor2, xor3))
+
+        return min_score
