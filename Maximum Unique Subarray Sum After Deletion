@@ -1,0 +1,12 @@
+class Solution:
+    def maxSum(self, nums: List[int]) -> int:
+        sm=0
+        nums.sort()
+        s=set(nums)
+        for i in s:
+            if i>0:
+                sm+=i
+        if not sm:
+            return nums[-1]
+        return sm
+        
